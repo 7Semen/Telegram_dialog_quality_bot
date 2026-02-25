@@ -153,8 +153,12 @@ async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
 
     d1, d2 = parts[1], parts[2]
     start, end = date_range_from_args(d1, d2)
-
-    agg, top = await repo.report(message.chat.id, start, end)
+    chat_id = message.chat.id
+    agg, top = await repo.report(chat_id, start, end)
+    rt = await repo.response_time_stats(chat_id, start, end)
+    responded = int(rt["responded_cnt"] or 0)
+    avg_sec = float(rt["avg_sec"] or 0)
+    median_sec = float(rt["median_sec"] or 0)
     total = int(agg["total_analyzed"] or 0)
     problems = int(agg["problems"] or 0)
 
@@ -163,8 +167,23 @@ async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
         f"Проанализировано: {total}",
         f"Проблемных: {problems}",
         "",
-        "Топ проблем:"
+        "Топ проблем:",
     ]
+
+    lines += [
+        "",
+        "Скорость ответа (следующее сообщение от другого пользователя):",
+        f"Ответов найдено: {responded}",
+]
+
+    if responded == 0:
+        lines += ["Среднее время ответа: нет данных", "Медиана времени ответа: нет данных"]
+    else:
+        lines += [
+            f"Среднее время ответа: {float(avg_sec):.1f} сек",
+            f"Медиана времени ответа: {float(median_sec):.1f} сек",
+    ]
+
     if top:
         for r in top:
             prob_ru = PROBLEM_RU.get(r["detected_problem"], r["detected_problem"])
