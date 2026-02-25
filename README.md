@@ -147,11 +147,13 @@ python -m venv venv
 
 source venv/bin/activate
 
-3. Установка зависимостей
+3. Скопируйте .env.example в .env
+
+4. Установка зависимостей
    
 pip install -r requirements.txt
 
-4. Настройка переменных окружения
+5. Настройка переменных окружения
 
 Создать файл .env:
 
@@ -165,6 +167,6 @@ YANDEX_FOLDER_ID=...
 
 YANDEX_MODEL_URI=...
 
-5. Запуск
+6. Запуск
 
 python -m quality_bot.app
