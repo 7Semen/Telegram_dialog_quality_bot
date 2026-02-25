@@ -138,11 +138,13 @@ analysis_results
 1. Клонирование репозитория
    
 git clone https://github.com/USERNAME/Telegram_dialog_quality_bot.git
+
 cd Telegram_dialog_quality_bot
 
 3. Создание виртуального окружения
    
 python -m venv venv
+
 source venv/bin/activate
 
 4. Установка зависимостей
