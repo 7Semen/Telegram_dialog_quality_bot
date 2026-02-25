@@ -141,17 +141,17 @@ git clone https://github.com/USERNAME/Telegram_dialog_quality_bot.git
 
 cd Telegram_dialog_quality_bot
 
-3. Создание виртуального окружения
+2. Создание виртуального окружения
    
 python -m venv venv
 
 source venv/bin/activate
 
-4. Установка зависимостей
+3. Установка зависимостей
    
 pip install -r requirements.txt
 
-5. Настройка переменных окружения
+4. Настройка переменных окружения
 
 Создать файл .env:
 
