@@ -134,6 +134,12 @@ analysis_results
 
 - среднее время ответа пользователя (по разнице timestamps)
 
+## Инициализация базы данных
+
+```bash
+psql -U postgres -d telegram_analysis_db -f sql/init.sql
+```
+
 ## Запуск проекта
 1. Клонирование репозитория
    
