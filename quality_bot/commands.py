@@ -131,14 +131,14 @@ async def cmd_issues(message: Message, repo: Repo, admin_ids: set[int]):
 
     out = []
     for r in rows:
-            sent_ru = SENTIMENT_RU.get(r["sentiment"], r["sentiment"])
-            prob_ru = PROBLEM_RU.get(r["detected_problem"], r["detected_problem"])
+        sent_ru = SENTIMENT_RU.get(r["sentiment"], r["sentiment"])
+        prob_ru = PROBLEM_RU.get(r["detected_problem"], r["detected_problem"])
 
-            out.append(
-                f"[{r['analysis_date']:%Y-%m-%d %H:%M}] {r['username']} | "
-                f"{sent_ru} | {prob_ru}\n"
-                f"msg: {r['message_text'][:220]}"
-            )
+        out.append(
+            f"[{r['analysis_date']:%Y-%m-%d %H:%M}] {r['username']} | "
+            f"{sent_ru} | {prob_ru}\n"
+            f"msg: {r['message_text'][:220]}"
+        )
     await message.answer("\n\n".join(out))
 
 
