@@ -143,21 +143,21 @@ psql -U postgres -d telegram_analysis_db -f sql/init.sql
 ## Запуск проекта
 1. Клонирование репозитория
    
-git clone https://github.com/USERNAME/Telegram_dialog_quality_bot.git
+```git clone https://github.com/USERNAME/Telegram_dialog_quality_bot.git```
 
-cd Telegram_dialog_quality_bot
+```cd Telegram_dialog_quality_bot```
 
 2. Создание виртуального окружения
    
-python -m venv venv
+```python -m venv venv```
 
-source venv/bin/activate
+```source venv/bin/activate```
 
 3. Скопируйте .env.example в .env
 
 4. Установка зависимостей
    
-pip install -r requirements.txt
+```pip install -r requirements.txt```
 
 5. Настройка переменных окружения
 
@@ -175,4 +175,4 @@ YANDEX_MODEL_URI=...
 
 6. Запуск
 
-python -m quality_bot.app
+```python -m quality_bot.app```
