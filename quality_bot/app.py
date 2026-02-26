@@ -1,4 +1,13 @@
 import asyncio
+import sys
+from dotenv import load_dotenv
+load_dotenv()
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from aiogram.enums import ChatType
@@ -8,9 +17,9 @@ from .config import load_config
 from .db import create_pool
 from .repo import Repo
 from .commands import router as commands_router
-from dotenv import load_dotenv
-load_dotenv()
 
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 async def main():
     cfg = load_config()
