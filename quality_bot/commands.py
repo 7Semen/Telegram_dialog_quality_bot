@@ -78,7 +78,7 @@ async def cmd_history(message: Message, repo: Repo, admin_ids: set[int]):
         
     except Exception:
         import logging
-        logging.exception("report failed")
+        logging.exception("history failed")
         return await message.answer("Ошибка при выводе истории. Проверьте логи.")
 
 
@@ -122,7 +122,7 @@ async def cmd_analyze(message: Message, repo: Repo, admin_ids: set[int]):
         await message.answer(f"Готово. Проанализировано: {analyzed}. Проблем: {problems}.")
     except Exception:
         import logging
-        logging.exception("report failed")
+        logging.exception("analyze failed")
         return await message.answer("Ошибка при анализе. Проверьте логи.")
 
 
@@ -157,7 +157,7 @@ async def cmd_issues(message: Message, repo: Repo, admin_ids: set[int]):
         await message.answer("\n\n".join(out))
     except Exception:
         import logging
-        logging.exception("report failed")
+        logging.exception("issues failed")
         return await message.answer("Ошибка при поиске проблем. Проверьте логи.")
 
 @router.message(F.text.regexp(r"^/report(@\w+)?(\s|$)"))
@@ -217,7 +217,7 @@ async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
         logging.exception("report failed")
         return await message.answer("Ошибка при формировании отчёта. Проверьте логи.")
 
-@router.message()
+@router.message(F.text)
 async def collect_message(message: Message, repo: Repo, admin_ids: set[int]):
     # сохраняем только группы/супергруппы (как корпоративные чаты)
     if message.chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
@@ -225,6 +225,10 @@ async def collect_message(message: Message, repo: Repo, admin_ids: set[int]):
 
     # игнор системных событий без текста
     if not message.text:
+        return
+
+    txt = (message.text or "").strip()
+    if not txt or txt.startswith("/"):
         return
 
     # сохраним чат
