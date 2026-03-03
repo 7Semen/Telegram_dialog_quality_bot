@@ -79,46 +79,51 @@ async def cmd_history(message: Message, repo: Repo, admin_ids: set[int]):
     except Exception:
         import logging
         logging.exception("report failed")
-        return await message.answer("Ошибка при формировании отчёта. Проверьте логи.")
+        return await message.answer("Ошибка при выводе истории. Проверьте логи.")
 
 
 @router.message(F.text.regexp(r"^/analyze(@\w+)?(\s|$)"))
 async def cmd_analyze(message: Message, repo: Repo, admin_ids: set[int]):
-    if not _is_admin(message, admin_ids):
-        return await message.answer("Недостаточно прав.")
-
-    parts = message.text.split()
-    if len(parts) < 3:
-        return await message.answer("Формат: /analyze YYYY-MM-DD YYYY-MM-DD [limit]")
-
-    d1, d2 = parts[1], parts[2]
-    limit = int(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else 200
-    start, end = date_range_from_args(d1, d2)
-
-    rows = await repo.list_messages(message.chat.id, start, end, limit=limit)
-    if not rows:
-        return await message.answer("Нет сообщений для анализа.")
-
-    analyzed = 0
-    problems = 0
-
-    for r in rows:
-        txt = (r["message_text"] or "").strip()
-        if not txt or txt.startswith("/"):
-            continue
-
-        try:
-            sentiment, problem = await analyze_text(txt)
-            await repo.save_analysis(int(r["message_id"]), sentiment, problem)
-            analyzed += 1
-            if problem != "ok":
-                problems += 1
-        except Exception:
-            # лог + продолжаем дальше
-            import logging
-            logging.exception("analyze/save failed for message_id=%s", r["message_id"])
-            continue
-    await message.answer(f"Готово. Проанализировано: {analyzed}. Проблем: {problems}.")
+    try:
+        if not _is_admin(message, admin_ids):
+            return await message.answer("Недостаточно прав.")
+    
+        parts = message.text.split()
+        if len(parts) < 3:
+            return await message.answer("Формат: /analyze YYYY-MM-DD YYYY-MM-DD [limit]")
+    
+        d1, d2 = parts[1], parts[2]
+        limit = int(parts[3]) if len(parts) >= 4 and parts[3].isdigit() else 200
+        start, end = date_range_from_args(d1, d2)
+    
+        rows = await repo.list_messages(message.chat.id, start, end, limit=limit)
+        if not rows:
+            return await message.answer("Нет сообщений для анализа.")
+    
+        analyzed = 0
+        problems = 0
+    
+        for r in rows:
+            txt = (r["message_text"] or "").strip()
+            if not txt or txt.startswith("/"):
+                continue
+    
+            try:
+                sentiment, problem = await analyze_text(txt)
+                await repo.save_analysis(int(r["message_id"]), sentiment, problem)
+                analyzed += 1
+                if problem != "ok":
+                    problems += 1
+            except Exception:
+                # лог + продолжаем дальше
+                import logging
+                logging.exception("analyze/save failed for message_id=%s", r["message_id"])
+                continue
+        await message.answer(f"Готово. Проанализировано: {analyzed}. Проблем: {problems}.")
+    except Exception:
+        import logging
+        logging.exception("report failed")
+        return await message.answer("Ошибка при анализе. Проверьте логи.")
 
 
 @router.message(F.text.regexp(r"^/issues(@\w+)?(\s|$)"))
@@ -153,7 +158,7 @@ async def cmd_issues(message: Message, repo: Repo, admin_ids: set[int]):
     except Exception:
         import logging
         logging.exception("report failed")
-        return await message.answer("Ошибка при формировании отчёта. Проверьте логи.")
+        return await message.answer("Ошибка при поиске проблем. Проверьте логи.")
 
 @router.message(F.text.regexp(r"^/report(@\w+)?(\s|$)"))
 async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
@@ -223,7 +228,7 @@ async def collect_message(message: Message, repo: Repo, admin_ids: set[int]):
         return
 
     # сохраним чат
-    await repo.ensure_chat(message.chat.id, message.chat.title)
+    await repo.ensure_chat(message.chat.id, message.chat.title or "Group")
 
     # роль по умолчанию user, админа определяем по списку admin_ids
     role = "admin" if _is_admin(message, admin_ids) else "user"
