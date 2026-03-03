@@ -102,7 +102,7 @@ async def cmd_analyze(message: Message, repo: Repo, admin_ids: set[int]):
         if txt.strip().startswith("/"):
             continue
 
-        sentiment, problem = analyze_text(txt)
+        sentiment, problem = await analyze_text(txt)
         await repo.save_analysis(int(r["message_id"]), sentiment, problem)
 
         analyzed += 1
@@ -170,6 +170,13 @@ async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
         "Топ проблем:",
     ]
 
+    if top:
+        for r in top:
+            prob_ru = PROBLEM_RU.get(r["detected_problem"], r["detected_problem"])
+            lines.append(f"- {prob_ru}: {int(r['cnt'])}")
+    else:
+        lines.append("- (нет)")
+
     lines += [
         "",
         "Скорость ответа (следующее сообщение от другого пользователя):",
@@ -184,10 +191,5 @@ async def cmd_report(message: Message, repo: Repo, admin_ids: set[int]):
             f"Медиана времени ответа: {float(median_sec):.1f} сек",
     ]
 
-    if top:
-        for r in top:
-            prob_ru = PROBLEM_RU.get(r["detected_problem"], r["detected_problem"])
-            lines.append(f"- {prob_ru}: {int(r['cnt'])}")
-    else:
-        lines.append("- (нет)")
+    
     await message.answer("\n".join(lines))
