@@ -1,25 +1,21 @@
 import asyncio
-import sys
-from dotenv import load_dotenv
-load_dotenv()
+import logging
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    
+from aiogram import Router
+from aiogram.types import ErrorEvent
 from aiogram import Bot, Dispatcher, F
 from aiogram.types import Message
 from aiogram.enums import ChatType
-from aiogram.filters import CommandStart
+from dotenv import load_dotenv
 
 from .config import load_config
 from .db import create_pool
 from .repo import Repo
 from .commands import router as commands_router
 
+load_dotenv()
+logging.basicConfig(level=logging.INFO)
 
-sys.stdout.reconfigure(encoding='utf-8')
 
 async def main():
     cfg = load_config()
@@ -36,32 +32,43 @@ async def main():
 
     @dp.message(F.text & ~F.text.startswith("/"))
     async def collect_messages(message: Message):
-        if not message.text:
+        try:
+            # фильтры
+            if not message.text:
+                return
+            if message.chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
+                return
+            if not message.from_user:
+                return
+
+            chat_name = message.chat.title or "Group"
+            await repo.ensure_chat(message.chat.id, chat_name)
+
+            username = (
+                message.from_user.username
+                or message.from_user.full_name
+                or f"user_{message.from_user.id}"
+            )
+
+            user_id = await repo.ensure_user(
+                tg_user_id=message.from_user.id,
+                username=username,
+                role_name="viewer",
+            )
+
+            await repo.add_message(
+                chat_id=message.chat.id,
+                user_id=user_id,
+                text=message.text,
+                tg_message_id=message.message_id,
+                created_at=message.date,
+            )
+
+        except Exception:
+            logger.exception("collect_messages failed")
             return
 
-        if message.chat.type not in (ChatType.GROUP, ChatType.SUPERGROUP):
-            return
-
-        chat_id = message.chat.id
-        chat_name = message.chat.title or "Group"
-        await repo.ensure_chat(chat_id, chat_name)
-
-        username = (
-            message.from_user.username
-            or message.from_user.full_name
-            or f"user_{message.from_user.id}"
-        )
-
-        user_id = await repo.ensure_user(username=username, role_name="viewer")
-
-        await repo.add_message(
-            chat_id=chat_id,
-            user_id=user_id,
-            text=message.text,
-            created_at=message.date,
-        )
-
-    print("Bot started.")
+    logging.info("Bot started.")
     await dp.start_polling(bot)
 
 
