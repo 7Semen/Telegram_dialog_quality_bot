@@ -13,9 +13,10 @@ from .db import create_pool
 from .repo import Repo
 from .commands import router as commands_router
 
-load_dotenv()
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
+load_dotenv()
 
 async def main():
     cfg = load_config()
